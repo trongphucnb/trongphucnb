@@ -22,7 +22,7 @@ def save_phone(phone):
     
     return "Phone number saved successfully", 200
 
-@app.route('/get_phone', methods=['GET'])
+@app.route('/getphone', methods=['GET'])
 def get_phone():
     with open(file_path, 'r') as f:
         numbers = f.readlines()
@@ -41,43 +41,23 @@ def get_phone():
         f.writelines(numbers[1:])
 
     return jsonify({"phone": phone}), 200
-@app.route('/post_code', methods=['POST'])
-def save_code():
-    content = request.data.decode('utf-8')
-    
-    if '|' in content:
-        phone, code = content.split('|', 1)
+@app.route('/postcode/<code>', methods=['POST'])
+def save_code(code):
+    # Lưu mã vào file
+    with open(sms_path, 'a') as sms_file:
+        sms_file.write(code + '\n')
+    return "Code saved successfully", 200
 
-        # Kiểm tra xem sdt đã tồn tại trong sms.txt chưa
-        entries = []
-        with open(sms_path, 'r') as sms_file:
-            entries = sms_file.readlines()
-        
-        for index, line in enumerate(entries):
-            if line.startswith(phone):
-                # Cập nhật entry nếu sdt đã tồn tại
-                entries[index] = f"{phone}|{code}\n"
-                break
-        else:
-            # Thêm sdt|code mới vào danh sách nếu sdt không tồn tại
-            entries.append(f"{phone}|{code}\n")
-
-        # Ghi lại danh sách vào sms.txt
-        with open(sms_path, 'w') as sms_file:
-            sms_file.writelines(entries)
-
-        return "Code saved successfully", 200
-
-    return "Invalid content format. Expected format: sdt|code", 400
-@app.route('/sec/<phone>', methods=['GET'])
-def retrieve_code(phone):
+@app.route('/getcode', methods=['GET'])
+def retrieve_codes():
     with open(sms_path, 'r') as sms_file:
-        for line in sms_file:
-            if line.startswith(phone):
-                phone_in_file, code = line.strip().split('|')
-                return jsonify({'phone': phone_in_file, 'code': code}), 200
+        codes = [line.strip() for line in sms_file.readlines()]
+    
+    # Xóa dữ liệu sau khi truy xuất
+    with open(sms_path, 'w') as sms_file:
+        sms_file.write("")
 
-    return jsonify({'error': f"No entry found for phone number: {phone}"}), 404
+    return jsonify({'codes': codes}), 200
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5009)
