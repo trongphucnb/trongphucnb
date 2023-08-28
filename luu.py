@@ -30,22 +30,26 @@ def get_phone():
     # Nếu không có số điện thoại trong file
     if not numbers:
         return jsonify({"error": "No phone numbers available"}), 404
-
-    # Lấy số đầu tiên và chuyển nó sang sms.txt
-    phone = numbers[0].strip()
-    with open(sms_path, 'a') as sms_file:
-        sms_file.write(phone + '\n')
-
+        
     # Xóa số điện thoại đã lấy khỏi sdt.txt
     with open(file_path, 'w') as f:
         f.writelines(numbers[1:])
-
+ 
     return jsonify({"phone": phone}), 200
 @app.route('/postcode/<code>', methods=['POST'])
 def save_code(code):
+    # Đọc tất cả các mã từ file
+    with open(sms_path, 'r') as sms_file:
+        existing_codes = [line.strip() for line in sms_file.readlines()]
+
+    # Kiểm tra nếu mã đã tồn tại
+    if code in existing_codes:
+        return "Code already exists", 400
+
     # Lưu mã vào file
     with open(sms_path, 'a') as sms_file:
         sms_file.write(code + '\n')
+        
     return "Code saved successfully", 200
 
 @app.route('/getcode', methods=['GET'])
