@@ -1,8 +1,8 @@
 from flask import Flask, request, jsonify
 app = Flask(__name__)
 
-file_path = 'root/sdt.txt'
-sms_path = 'root/sms.txt'
+file_path = '/sdt.txt'
+sms_path = '/sms.txt'
 
 @app.route('/post/<phone>', methods=['POST'])
 def save_phone(phone):
