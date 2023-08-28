@@ -49,13 +49,22 @@ def save_code():
         phone, code = content.split('|', 1)
 
         # Kiểm tra xem sdt đã tồn tại trong sms.txt chưa
+        entries = []
         with open(sms_path, 'r') as sms_file:
-            if any(line.startswith(phone) for line in sms_file):
-                return "Phone number already exists in sms.txt", 400
+            entries = sms_file.readlines()
+        
+        for index, line in enumerate(entries):
+            if line.startswith(phone):
+                # Cập nhật entry nếu sdt đã tồn tại
+                entries[index] = f"{phone}|{code}\n"
+                break
+        else:
+            # Thêm sdt|code mới vào danh sách nếu sdt không tồn tại
+            entries.append(f"{phone}|{code}\n")
 
-        # Thêm sdt|code vào sms.txt
-        with open(sms_path, 'a') as sms_file:
-            sms_file.write(f"{phone}|{code}\n")
+        # Ghi lại danh sách vào sms.txt
+        with open(sms_path, 'w') as sms_file:
+            sms_file.writelines(entries)
 
         return "Code saved successfully", 200
 
